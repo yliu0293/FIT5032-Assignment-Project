@@ -20,6 +20,4 @@
     /* background-color: #e0bfbf; */
     border-radius: 10px;
   }
-  
-  
   </style>

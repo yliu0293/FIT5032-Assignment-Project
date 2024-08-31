@@ -1,10 +1,10 @@
 <template>
     <div>
-      <!-- Navbar -->
-      <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+      <!-- Navbar based on bootstrap https://getbootstrap.com/docs/4.0/components/navbar/-->
+      <nav class="navbar navbar-expand-lg navbar-light bg-white  shadow-sm">
         <div class="container">
-          <router-link to="/Home" class="navbar-brand">
-            <img src="@/assets/logo.png" alt="SeniorCare Direct" style="max-height: 50px;" />
+          <router-link to="/" class="navbar-brand">
+            <img src="@/assets/logo.png" alt="SeniorCare Direct" style="max-height: 60px;" />
           </router-link>
           <!--add a button for collapse navi bar-->
           <button
@@ -18,11 +18,11 @@
           >
             <span class="navbar-toggler-icon"></span>
           </button>
-          <!-- Collapsible content -->
+          <!-- NavBar content -->
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-              <li class="nav-item">
-                <router-link to="/Home" class="nav-link">Home</router-link>
+              <li class="nav-item-Home">
+                <router-link to="/" class="nav-link">Home</router-link>
               </li>
               <li class="nav-item">
                 <router-link to="/About" class="nav-link">What We Do</router-link>
@@ -36,29 +36,51 @@
               <li class="nav-item">
                 <router-link to="/" class="nav-link">Join the Community</router-link>
               </li>
-              <li class="nav-item">
-                <a class="btn btn-outline-dark me-2" href="/Login">Sign in</a>
+              <!-- diplay admin page navigation when admin logged in -->
+              <li class="nav-item" v-if="userType === 'admin'">
+                <router-link to="/admin-view" class="nav-link">Admin View</router-link>
               </li>
-              <li class="nav-item">
-                <a class="btn btn-dark" href="#">Register</a>
+              <!-- diplay login logout based on login statues -->
+              <li class = "nav-item" v-if="!isAuthenticated">
+                <a class="btn btn-primary" href="/Login" >Login</a>
+              </li>
+              <li v-else>
+                <!-- <router-link to="/logout" class="nav-link" active-class="active">Logout</router-link> -->
+                <a href="#" class="btn btn-dark" @click.prevent="handleLogout">Logout</a>
+              </li>
+              <li class="nav-item" v-if="!isAuthenticated">
+                <a class="btn btn-dark" href="/Register">Register</a>
               </li>
             </ul>
           </div>
         </div>
       </nav>
   
-      <!-- Route View -->
       <router-view></router-view>
     </div>
   </template>
   
   <script>
+  import { mapState, mapActions } from 'vuex';
+
   export default {
-    name: 'Layout',
+    name: 'NavBar',
+
+    computed: {
+      ...mapState(['isAuthenticated', 'userType']),
+    },
+
+    methods: {
+      ...mapActions(['logout']),
+      handleLogout() {
+        this.logout(); 
+        this.$router.push({ name: 'Login' }); // Redirect to Home after logout
+      },
+   }
   };
   </script>
   
   <style scoped>
-  /* Additional styling if needed */
+
   </style>
   
