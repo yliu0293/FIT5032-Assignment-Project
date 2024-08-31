@@ -14,7 +14,8 @@
           <div class="form-group mb-3">
             <label for="username" class="sr-only">Username</label>
             <input
-              type="username"
+              type="text"
+              v-model="username"
               id="username"
               class="form-control form-control-lg"
               placeholder="Username"
@@ -26,6 +27,7 @@
             <label for="password" class="sr-only">Password</label>
             <input
               type="password"
+              v-model="password"
               id="password"
               class="form-control form-control-lg"
               placeholder="Password"

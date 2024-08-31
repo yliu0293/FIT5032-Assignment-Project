@@ -2,18 +2,19 @@
   <div class="container-fluid bg-light vh-100 d-flex align-items-center justify-content-center">
     <div class="text-center">
       <h1 class="mb-3">Welcome!</h1>
-      <p class="text-muted my-2">Please signup below</p>
+      <p class="text-muted my-2">Please register below</p>
       <a href="/login" class="text-decoration-none">Or sign in</a>
       <div style="margin-bottom: 10px;"></div>
 
       <form @submit.prevent="handleRegister" class="w-100" style="max-width: 300px;">
         <div class="form-group mb-3">
-          <label for="email" class="sr-only">Email</label>
+          <label for="username" class="sr-only">Username</label>
           <input
-            type="email"
-            id="email"
+            type="text"
+            v-model="username"
+            id="username"
             class="form-control form-control-lg"
-            placeholder="Email"
+            placeholder="Username"
             required
           />
         </div>
@@ -22,6 +23,7 @@
           <label for="password" class="sr-only">Password</label>
           <input
             type="password"
+            v-model="password"
             id="password"
             class="form-control form-control-lg"
             placeholder="Password"
@@ -50,12 +52,21 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
+
 export default {
   name: 'RegisterView',
+  data() {
+    return {
+      username: '',
+      password: '',
+    };
+  },
   methods: {
+    ...mapActions(['registerUser']), // Ensure 'registerUser' action exists in the store
     handleRegister() {
-      // Handle register logic here
-      console.log('register button clicked');
+      this.registerUser({ username: this.username, password: this.password });
+      this.$router.push({ name: 'Login' }); // Redirect to login page after successful registration
     },
   },
 };
