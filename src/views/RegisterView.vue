@@ -22,10 +22,10 @@
         </div>
 
         <div class="form-group mb-3">
-          <label for="formData.password" class="sr-only">Password</label>
+          <label for="password" class="sr-only">Password</label>
           <input
             type="password"
-            v-model="password"
+            v-model="formData.password"
             id="password"
             class="form-control form-control-lg"
             placeholder="Password"
@@ -123,9 +123,12 @@ export default {
       this.validateName(true)
       this.validatePassword(true)
       this.validateConfirmPassword(true)
-      if (!errors.username && !this.errors.password && !this.errors.confirmPassword) {
+      if (!this.errors.username && !this.errors.password && !this.errors.confirmPassword) {
         this.registerUser({ username: this.formData.username, password: this.formData.password });
         this.$router.push({ name: 'Login' }); // Redirect to login page after successful registration
+      } else {
+        //Alert for unsuccessful registration attempt
+        alert('Validation failed, Please check your details and try again');
       }
     },
   },

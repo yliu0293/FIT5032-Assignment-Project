@@ -44,8 +44,10 @@ export default createStore({
         commit('setAuthentication', true);
         commit('setUser', { username: credentials.username });
         commit('setUserType', 'user'); 
+        return true;
       } else {
         alert('Invalid username or password');
+        return false;
       }
     },
     //Admin login

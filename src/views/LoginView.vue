@@ -58,11 +58,15 @@
       ...mapActions(['loginUser']), // Ensure 'loginUser' action exists in the store
       handleUserLogin() {
         const user = { username: this.username, password: this.password };
-        this.loginUser(user);
-        this.$router.push({ name: 'Home' }); // Redirect to Home after login
+
+        this.loginUser(user).then((loginSuccessful) => {
+          if (loginSuccessful) {
+            this.$router.push({ name: 'Home' }); // Redirect to Home only if login was successful
+          }
+        });
       },
     },
-    };
+  };
   </script>
   
   <style scoped>
