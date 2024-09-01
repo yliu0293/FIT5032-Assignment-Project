@@ -66,7 +66,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (!store.state.isAuthenticated && to.name !== 'RatingView' && to.name !== 'Home' && to.name !== 'Login' && to.name !== 'Register' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
+  if (!store.state.isAuthenticated && to.name !== 'Home' && to.name !== 'Login' && to.name !== 'Register' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
     return next({ name: 'AccessDenied' });
   } else {
     next();
