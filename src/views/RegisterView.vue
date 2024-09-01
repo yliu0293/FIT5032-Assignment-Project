@@ -60,6 +60,14 @@
 <script>
 import { mapActions } from 'vuex';
 
+const clearForm = () => {
+  formData.value = {
+    username: '',
+    password: '',
+    confirmPassword: '',
+  }
+}
+
 export default {
   name: 'RegisterView',
   data() {
@@ -125,7 +133,6 @@ export default {
       this.validateConfirmPassword(true)
       if (!this.errors.username && !this.errors.password && !this.errors.confirmPassword) {
         this.registerUser({ username: this.formData.username, password: this.formData.password });
-        this.$router.push({ name: 'Login' }); // Redirect to login page after successful registration
       } else {
         //Alert for unsuccessful registration attempt
         alert('Validation failed, Please check your details and try again');

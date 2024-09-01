@@ -91,10 +91,10 @@ export default createStore({
       users.push(newUser); 
 
       localStorage.setItem('users', JSON.stringify(users)); //save users to localStorage
+      
+      alert('registration successful, please login')
 
-      commit('addUser', newUser)
-
-      alert('registration successful, please login');
+      commit('addUser', newUser);
     },
 
     logout({ commit }) {
