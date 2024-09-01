@@ -8,6 +8,7 @@ import store from '../store/store'
 import AccessDeniedView from '../Views/AccessDeniedView.vue'
 import AdminLoginView from '../Views/AdminLoginView.vue'
 import AdminView from '../Views/AdminView.vue'
+import RatingView from '../views/RatingView.vue';
 
 
 const routes = [
@@ -50,6 +51,11 @@ const routes = [
         name: 'AdminView',
         component: AdminView,
       },
+      {
+        path: '/rating',
+        name: 'RatingView',
+        component: RatingView,
+      },
     ],
   },
 ]
@@ -60,7 +66,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (!store.state.isAuthenticated && to.name !== 'Home' && to.name !== 'Login' && to.name !== 'Register' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
+  if (!store.state.isAuthenticated && to.name !== 'RatingView' && to.name !== 'Home' && to.name !== 'Login' && to.name !== 'Register' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
     return next({ name: 'AccessDenied' });
   } else {
     next();

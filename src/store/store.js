@@ -72,7 +72,7 @@ export default createStore({
       let users = [];
 
       try {
-        // Try to parse users from localStorage
+        //Try to parse users from localStorage
         users = JSON.parse(localStorage.getItem('users')) || [];
       } catch (error) {
         console.error('Error parsing users from localStorage:', error);
@@ -87,7 +87,7 @@ export default createStore({
 
       const hashedPassword = CryptoJS.SHA256(password).toString();
 
-      const newUser = ({ username, password: hashedPassword }); // Add new user
+      const newUser = ({ username, password: hashedPassword }); // add new user
       users.push(newUser); 
 
       localStorage.setItem('users', JSON.stringify(users)); //save users to localStorage

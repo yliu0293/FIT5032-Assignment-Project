@@ -36,20 +36,23 @@
               <li class="nav-item">
                 <router-link to="/" class="nav-link">Join the Community</router-link>
               </li>
+              <li class="nav-item">
+                <router-link to="/rating" class="nav-link">Rating</router-link>
+              </li>
               <!-- diplay admin page navigation when admin logged in -->
               <li class="nav-item" v-if="userType === 'admin'">
                 <router-link to="/admin-view" class="nav-link">Admin View</router-link>
               </li>
               <!-- diplay login logout based on login statues -->
               <li class = "nav-item" v-if="!isAuthenticated">
-                <a class="btn btn-primary" href="/Login" >Login</a>
+                <a :href="loginLink" class="btn btn-primary">Login</a>
               </li>
               <li v-else>
                 <!-- <router-link to="/logout" class="nav-link" active-class="active">Logout</router-link> -->
                 <a href="#" class="btn btn-dark" @click.prevent="handleLogout">Logout</a>
               </li>
               <li class="nav-item" v-if="!isAuthenticated">
-                <a class="btn btn-dark" href="/Register">Register</a>
+                <a :href="registerLink" class="btn btn-dark">Register</a>
               </li>
             </ul>
           </div>
@@ -68,6 +71,14 @@
 
     computed: {
       ...mapState(['isAuthenticated', 'userType']),
+
+      loginLink() {
+        return '/Login'; 
+      },
+      registerLink() {
+        return '/Register';
+      }
+
     },
 
     methods: {
