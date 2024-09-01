@@ -73,4 +73,12 @@ router.beforeEach((to, from, next) => {
   }
 });
 
+router.beforeEach((to, from, next) => {
+  if (store.state.userType !== 'admin' && to.name == 'AdminView') {
+    return next({ name: 'AccessDenied' });
+  } else {
+    next();
+  }
+});
+
 export default router
