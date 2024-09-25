@@ -40,7 +40,7 @@
                 <router-link to="/rating" class="nav-link">Rating</router-link>
               </li>
               <!-- diplay admin page navigation when admin logged in -->
-              <li class="nav-item" v-if="userType === 'admin'">
+              <li class="nav-item" v-if="userRole === 'admin'">
                 <router-link to="/admin-view" class="nav-link">Admin View</router-link>
               </li>
               <!-- diplay login logout based on login statues -->
@@ -64,25 +64,41 @@
   </template>
   
   <script>
-  import { mapState, mapActions } from 'vuex';
+  import { getAuth, onAuthStateChanged } from "firebase/auth";
+  import { getFirestore, doc, getDoc } from "firebase/firestore"; 
 
   export default {
     name: 'NavBar',
 
-    computed: {
-      ...mapState(['isAuthenticated', 'userType']),
-
-      
-
+    data() {
+      return {
+        isAuthenticated: false,
+        userRole: null,
+      };
     },
 
-    methods: {
-      ...mapActions(['logout']),
-      handleLogout() {
-        this.logout(); 
-        this.$router.push({ name: 'Login' }); // Redirect to Home after logout
-      },
-   }
+    created() {
+      const auth = getAuth();
+      const db = getFirestore();
+
+      // Check if user is authenticated
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          this.isAuthenticated = true;
+
+          // Fetch user role from Firestore
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            this.userRole = userDoc.data().role;
+          } else {
+            console.error('No such document!');
+          }
+        } else {
+          this.isAuthenticated = false;
+          this.userRole = null;
+        }
+      });
+    },
   };
   </script>
   

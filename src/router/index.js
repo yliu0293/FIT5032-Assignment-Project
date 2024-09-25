@@ -84,7 +84,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (!store.state.isAuthenticated && to.name !== 'Home' && to.name !== 'FireLogin' && to.name !== 'FireRegister' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
+  if (!store.state.isAuthenticated && to.name !== 'Home' && to.name !== 'FireLogin' && to.name !== 'FireRegister' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied' && to.name !== 'Logout') {
     return next({ name: 'AccessDenied' });
   } else {
     next();
