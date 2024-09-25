@@ -45,14 +45,14 @@
               </li>
               <!-- diplay login logout based on login statues -->
               <li class = "nav-item" v-if="!isAuthenticated">
-                <a :href="loginLink" class="btn btn-primary">Login</a>
+                <router-link to="/Firelogin" class="btn btn-primary">Login</router-link>
               </li>
-              <li v-else>
+              <li class="nav-item" v-else>
                 <!-- <router-link to="/logout" class="nav-link" active-class="active">Logout</router-link> -->
-                <a href="#" class="btn btn-dark" @click.prevent="handleLogout">Logout</a>
+                <router-link to="/logout" class="nav-link" active-class="active">Logout</router-link>
               </li>
               <li class="nav-item" v-if="!isAuthenticated">
-                <a :href="registerLink" class="btn btn-dark">Register</a>
+                <router-link to="/Fireregister" class="btn btn-dark">Register</router-link>
               </li>
             </ul>
           </div>
@@ -72,12 +72,7 @@
     computed: {
       ...mapState(['isAuthenticated', 'userType']),
 
-      loginLink() {
-        return '/Login'; 
-      },
-      registerLink() {
-        return '/Register';
-      }
+      
 
     },
 

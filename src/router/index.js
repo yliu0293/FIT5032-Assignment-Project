@@ -9,6 +9,9 @@ import AccessDeniedView from '../Views/AccessDeniedView.vue'
 import AdminLoginView from '../Views/AdminLoginView.vue'
 import AdminView from '../Views/AdminView.vue'
 import RatingView from '../views/RatingView.vue';
+import FirebaseSigninView from '../views/FirebaseSigninView.vue';
+import FirebaseRegisterView from '../views/FirebaseRegisterView.vue';
+import LogoutView from '../Views/LogoutView.vue'
 
 
 const routes = [
@@ -56,6 +59,21 @@ const routes = [
         name: 'RatingView',
         component: RatingView,
       },
+      {
+        path: '/Firelogin',
+        name: 'FireLogin',
+        component: FirebaseSigninView
+      },
+      {
+        path: '/Fireregister',
+        name: 'FireRegister',
+        component: FirebaseRegisterView
+      },
+      {
+        path: '/logout',
+        name: 'Logout',
+        component: LogoutView
+      },
     ],
   },
 ]
@@ -66,7 +84,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  if (!store.state.isAuthenticated && to.name !== 'Home' && to.name !== 'Login' && to.name !== 'Register' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
+  if (!store.state.isAuthenticated && to.name !== 'Home' && to.name !== 'FireLogin' && to.name !== 'FireRegister' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
     return next({ name: 'AccessDenied' });
   } else {
     next();
