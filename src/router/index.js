@@ -108,6 +108,17 @@ router.beforeEach((to, from, next) => {
           return next({ name: 'AccessDenied' });
         }
       }
+      if (to.name === 'RatingView') {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userRole = userDoc.data().role;
+          if (userRole == 'admin') {
+            return next({ name: 'AccessDenied' });
+          }
+        } else {
+          return next({ name: 'AccessDenied' });
+        }
+      }
     }
     next();
   });
