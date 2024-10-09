@@ -1,18 +1,19 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import AboutView from '../views/AboutView.vue'
-import NavBar from '../views/NavBar.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import HomeView from '../views/HomeView.vue';
+import AboutView from '../views/AboutView.vue';
+import NavBar from '../views/NavBar.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
-import store from '../store/store'
-import AccessDeniedView from '../Views/AccessDeniedView.vue'
-import AdminLoginView from '../Views/AdminLoginView.vue'
-import AdminView from '../Views/AdminView.vue'
+import AccessDeniedView from '../Views/AccessDeniedView.vue';
+import AdminLoginView from '../Views/AdminLoginView.vue';
+import AdminView from '../Views/AdminView.vue';
 import RatingView from '../views/RatingView.vue';
 import FirebaseSigninView from '../views/FirebaseSigninView.vue';
 import FirebaseRegisterView from '../views/FirebaseRegisterView.vue';
-import LogoutView from '../Views/LogoutView.vue'
-
+import LogoutView from '../Views/LogoutView.vue';
+import db from '@/firebase/init';
 
 const routes = [
   {
@@ -80,23 +81,36 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
-})
-
-router.beforeEach((to, from, next) => {
-  if (!store.state.isAuthenticated && to.name !== 'Home' && to.name !== 'FireLogin' && to.name !== 'FireRegister' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied' && to.name !== 'Logout') {
-    return next({ name: 'AccessDenied' });
-  } else {
-    next();
-  }
+  routes,
 });
 
+// Add Firebase auth state tracking
+const auth = getAuth();
+//const db = getFirestore();
+
 router.beforeEach((to, from, next) => {
-  if (store.state.userType !== 'admin' && to.name == 'AdminView') {
-    return next({ name: 'AccessDenied' });
-  } else {
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      // User is not logged in
+      if (to.name !== 'Home' && to.name !== 'FireLogin' && to.name !== 'FireRegister' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied' && to.name !== 'Logout') {
+        return next({ name: 'AccessDenied' });
+      }
+    } else {
+      // User is authenticated, check for admin role if navigating to AdminView
+      if (to.name === 'AdminView') {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          const userRole = userDoc.data().role;
+          if (userRole !== 'admin') {
+            return next({ name: 'AccessDenied' });
+          }
+        } else {
+          return next({ name: 'AccessDenied' });
+        }
+      }
+    }
     next();
-  }
+  });
 });
 
-export default router
+export default router;
