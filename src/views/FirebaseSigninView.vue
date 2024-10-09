@@ -5,7 +5,7 @@
       <a href="/Fireregister" class="text-decoration-none">Signup</a>
       <p class="text-muted my-2">or sign in to your account</p>
 
-      <form @submit.prevent="signin" class="w-100" style="max-width: 300px;">
+      <form @submit.prevent="signinWithEmail" class="w-100" style="max-width: 300px;">
         <div class="form-group mb-3">
           <label for="email" class="sr-only">Email</label>
           <input
@@ -33,6 +33,10 @@
         <button type="submit" class="btn btn-outline-secondary btn-lg btn-block">Sign in</button>
       </form>
 
+      <button @click="signinWithGoogle" class="btn btn-outline-primary btn-lg mt-3">
+        Sign in with Google
+      </button>
+
       <!-- <a href="/admin-login" class="d-block mt-3 text-muted">Administrator sign in</a> -->
     </div>
   </div>
@@ -40,43 +44,96 @@
 
 <script setup>
 import { ref } from 'vue';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { useRouter } from 'vue-router';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
+// Initialize references
 const email = ref("");
 const password = ref("");
 const router = useRouter();
 const auth = getAuth();
+const db = getFirestore(); // Initialize Firestore
 
-const signin = () => {
+// Email and Password Sign-In
+const signinWithEmail = () => {
   signInWithEmailAndPassword(auth, email.value, password.value)
     .then((userCredential) => {
-      console.log("Firebase Login Successful!");
+      console.log("Firebase Email Login Successful!");
       const user = userCredential.user;
 
-      getDoc(doc(db, "users", user.uid)).then((docSnap) => {
-        if (docSnap.exists()) {
-          const role = docSnap.data().role;
-          console.log("User role: ", role);
+      // Fetch user role from Firestore
+      getDoc(doc(db, "users", user.uid))
+        .then((docSnap) => {
+          if (docSnap.exists()) {
+            const role = docSnap.data().role;
+            console.log("User role: ", role);
 
-          if (role === "admin") {
-            router.push("/admin-view");
+            // Redirect based on role
+            if (role === "admin") {
+              router.push("/admin-view");
+            } else {
+              router.push({ name: 'Home' });
+            }
           } else {
-            router.push({ name: 'Home' }); 
+            console.log("Invalid user");
           }
-        } else {
-          console.log("Invalid user");
-        }
-      }).catch((error) => {
-        console.error("Error fetching role: ", error);
-      });
+        })
+        .catch((error) => {
+          console.error("Error fetching role: ", error);
+        });
     })
     .catch((error) => {
-      console.log(error.code);
+      console.error("Firebase Email login error: ", error); // Log the full error object
+    });
+};
+
+// Google Sign-In
+const signinWithGoogle = () => {
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      console.log("Google Login Successful!");
+      const user = result.user;
+
+      // Check if user exists in Firestore
+      const userRef = doc(db, "users", user.uid);
+      getDoc(userRef)
+        .then((docSnap) => {
+          if (!docSnap.exists()) {
+            // If user doesn't exist, set default role as 'user'
+            setDoc(userRef, {
+              email: user.email,
+              role: 'user'
+            }).then(() => {
+              console.log("New user document created with role: user");
+            }).catch((error) => {
+              console.error("Error creating user document: ", error);
+            });
+          } else {
+            console.log("User already exists in Firestore");
+          }
+
+          // Fetch user role and redirect
+          const role = docSnap.exists() ? docSnap.data().role : 'user';
+          console.log("User role: ", role);
+
+          if (role === 'admin') {
+            router.push("/admin-view");
+          } else {
+            router.push({ name: 'Home' });
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user: ", error);
+        });
+    })
+    .catch((error) => {
+      console.error("Google login error: ", error);
     });
 };
 </script>
+
 
 <style scoped>
 .sr-only {
