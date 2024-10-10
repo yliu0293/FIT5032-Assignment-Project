@@ -1,57 +1,57 @@
+<!-- https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-vue/ -->
 <template>
-  <div class="text-center mt-4">
+  <div class="text-center mt-5">
     <h1 class="mb-4">Find nearby support</h1>
-    <p class="lead">Enter starting address to see directions.</p>
+    <p class="lead">Search by location name and address.</p>
+    <p class="lead">Select a location first to get direction from another location of your choice.</p>
   </div>
 
   <div id="layout">
-    <!-- Search input for original location (origin) -->
+    <!-- Location 1 Search -->
     <div class="search-bar">
-      <div class="search-input-container">
-        <input
-          v-model="origin"
-          @input="fetchOriginResults"
-          type="text"
-          placeholder="Enter starting location..."
-          class="input-box"
-        />
-        <button @click="clearRoute" class="action-button-clear">Clear</button> <!-- Clear button displayed here -->
-      </div>
+      <input
+        v-model="startPoint"
+        @input="searchStart"
+        type="text"
+        placeholder="Enter starting location..."
+        class="input-box"
+      />
 
-      <ul v-if="originResults.length" class="search-results">
-        <li v-for="(result, index) in originResults" :key="index" @click="selectOrigin(result)">
-          {{ result.place_name }}
+      <ul v-if="startOptions.length" class="search-results">
+        <li v-for="(place, idx) in startOptions" :key="idx" @click="pickStart(place)">
+          {{ place.place_name }}
         </li>
       </ul>
 
-      <!-- Display the "Get Directions" button only when the origin is set and the destination is hidden -->
-      <button v-if="originCoords && !showDestination" @click="showDestinationInput" class="action-button">
+      <!-- Button for Directions -->
+      <button v-if="startCoords && !showEndSearch" @click="toggleEndSearch" class="action-button">
         Get Directions
       </button>
 
-      <!-- Destination input appears after clicking "Get Directions" -->
-      <div v-if="showDestination">
+      <!-- Destination Input appears after clicking Get Directions -->
+      <div v-if="showEndSearch">
         <input
-          v-model="destination"
-          @input="fetchDestinationResults"
+          v-model="endPoint"
+          @input="searchEnd"
           type="text"
           placeholder="Enter destination location..."
           class="input-box"
         />
-        <ul v-if="destinationResults.length" class="search-results">
-          <li v-for="(result, index) in destinationResults" @click="selectDestination(result)">
-            {{ result.place_name }}
+        <ul v-if="endOptions.length" class="search-results">
+          <li v-for="(place, idx) in endOptions" @click="pickEnd(place)">
+            {{ place.place_name }}
           </li>
         </ul>
 
-        <!-- Show route button -->
+        <!-- Show Route and Clear Buttons -->
         <div>
-          <button @click="getDirections" class="action-button">Show Route</button>
+          <button @click="drawRoute" class="action-button">Show Route</button>
+          <button @click="resetMap" class="action-button-clear">Clear</button> 
         </div>
       </div>
     </div>
 
-    <div ref="mapContainer" class="map-container"></div> <!-- Map container here -->
+    <div ref="mapContainer" class="map-container"></div> <!-- Map goes here -->
   </div>
 </template>
 
@@ -64,151 +64,156 @@ mapboxgl.accessToken = 'pk.eyJ1IjoieWxpdTAyOTMiLCJhIjoiY20yMzNydHJ1MDFxYzJqb2h1b
 export default {
   data() {
     return {
-      map: null, // Mapbox map instance
-      origin: '', // User input for origin
-      destination: '', // User input for destination
-      originResults: [], // Search results for origin
-      destinationResults: [], // Search results for destination
-      originCoords: null, // Coordinates for origin
-      destinationCoords: null, // Coordinates for destination
-      originMarker: null, // Marker for origin location
-      destinationMarker: null, // Marker for destination location
-      directionsLayer: null, // Layer to display directions
-      showDestination: false, // Control visibility of destination input
+      map: null, 
+      startPoint: '', // Starting point search input
+      endPoint: '', // Destination point search input
+      startOptions: [], // Options for start point search results
+      endOptions: [], // Options for end point search results
+      startCoords: null, // Coordinates for starting point
+      endCoords: null, // Coordinates for destination
+      startPin: null, // Marker for start point
+      endPin: null, // Marker for end point
+      routePath: null, // Path for the route on the map
+      showEndSearch: false, // Toggle for destination input
     };
   },
   mounted() {
-    // Initialize the Mapbox map
+    // Initialize Mapbox Map
     this.map = new mapboxgl.Map({
       container: this.$refs.mapContainer,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [144.9631, -37.8136], // Melbourne as the default center
+      center: [144.9631, -37.8136], // Default is Melbourne
       zoom: 9,
     });
 
-    // Add navigation controls
     this.map.addControl(new mapboxgl.NavigationControl());
   },
   methods: {
-    // Fetch search results for origin
-    fetchOriginResults() {
-      if (!this.origin) {
-        this.originResults = [];
+    // Search for starting location
+    searchStart() {
+      if (!this.startPoint) {
+        this.startOptions = [];
         return;
       }
 
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.origin}.json?access_token=${mapboxgl.accessToken}`;
-      fetch(url)
+      let searchURL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.startPoint}.json?access_token=${mapboxgl.accessToken}`;
+      
+      fetch(searchURL)
         .then(response => response.json())
         .then(data => {
           if (data.features) {
-            this.originResults = data.features;
+            this.startOptions = data.features;
           } else {
-            this.originResults = [];
+            this.startOptions = [];
           }
         })
         .catch(err => {
-          console.error('Error fetching origin search results:', err);
+          console.error('Error while searching start location:', err);
         });
     },
-    // Fetch search results for destination
-    fetchDestinationResults() {
-      if (!this.destination) {
-        this.destinationResults = [];
+    // Search for destination location
+    searchEnd() {
+      if (!this.endPoint) {
+        this.endOptions = [];
         return;
       }
 
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.destination}.json?access_token=${mapboxgl.accessToken}`;
-      fetch(url)
+      let searchURL = `https://api.mapbox.com/geocoding/v5/mapbox.places/${this.endPoint}.json?access_token=${mapboxgl.accessToken}`;
+      
+      fetch(searchURL)
         .then(response => response.json())
         .then(data => {
           if (data.features) {
-            this.destinationResults = data.features;
+            this.endOptions = data.features;
           } else {
-            this.destinationResults = [];
+            this.endOptions = [];
           }
         })
         .catch(err => {
-          console.error('Error fetching destination search results:', err);
+          console.error('Error while searching destination:', err);
         });
     },
-    // Select the origin and set marker
-    selectOrigin(result) {
-      const [lng, lat] = result.center;
-      this.originCoords = [lng, lat];
-      this.origin = result.place_name; // Set full location name in input
+    // Select starting location
+    pickStart(place) {
+      const [lng, lat] = place.center;
+      this.startCoords = [lng, lat];
+      this.startPoint = place.place_name;
 
-      // Fly to the origin location
-      this.map.flyTo({ center: this.originCoords, zoom: 12 });
+      this.map.flyTo({ center: this.startCoords, zoom: 12 });
 
-      // Add origin marker
-      if (this.originMarker) {
-        this.originMarker.remove();
+      if (this.startPin) {
+        this.startPin.remove();
       }
-      this.originMarker = new mapboxgl.Marker({ color: 'blue' })
-        .setLngLat(this.originCoords)
+      this.startPin = new mapboxgl.Marker({ color: 'blue' })
+        .setLngLat(this.startCoords)
         .addTo(this.map);
 
-      this.originResults = []; // Clear search results
+      this.startOptions = [];
     },
-    // Select the destination and set marker
-    selectDestination(result) {
-      const [lng, lat] = result.center;
-      this.destinationCoords = [lng, lat];
-      this.destination = result.place_name; // Set full location name in input
+    // Select destination location
+    pickEnd(place) {
+      const [lng, lat] = place.center;
+      this.endCoords = [lng, lat];
+      this.endPoint = place.place_name;
 
-      // Fly to the destination location
-      this.map.flyTo({ center: this.destinationCoords, zoom: 12 });
+      this.map.flyTo({ center: this.endCoords, zoom: 12 });
 
-      // Add destination marker
-      if (this.destinationMarker) {
-        this.destinationMarker.remove();
+      if (this.endPin) {
+        this.endPin.remove();
       }
-      this.destinationMarker = new mapboxgl.Marker({ color: 'red' })
-        .setLngLat(this.destinationCoords)
+      this.endPin = new mapboxgl.Marker({ color: 'red' })
+        .setLngLat(this.endCoords)
         .addTo(this.map);
 
-      this.destinationResults = []; // Clear search results
+      this.endOptions = [];
     },
-    // Show the destination input box
-    showDestinationInput() {
-      this.showDestination = true;
+    // Toggle destination search box visibility
+    toggleEndSearch() {
+      this.showEndSearch = true;
     },
-    // Get directions between origin and destination
-    getDirections() {
-      if (!this.originCoords || !this.destinationCoords) {
-        alert("Please select both a starting location and a destination.");
+    // Fetch directions between locations
+    drawRoute() {
+      if (!this.startCoords || !this.endCoords) {
+        alert("Both locations must be selected.");
         return;
       }
 
-      const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${this.originCoords[0]},${this.originCoords[1]};${this.destinationCoords[0]},${this.destinationCoords[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+      if (this.startPin) this.startPin.remove();
+      if (this.endPin) this.endPin.remove();
 
-      fetch(directionsUrl)
+      if (this.map.getSource('routePath')) {
+        this.map.removeLayer('routePath');
+        this.map.removeSource('routePath');
+      }
+
+      this.startPin = new mapboxgl.Marker({ color: 'blue' })
+        .setLngLat(this.startCoords)
+        .addTo(this.map);
+
+      this.endPin = new mapboxgl.Marker({ color: 'red' })
+        .setLngLat(this.endCoords)
+        .addTo(this.map);
+
+      const routeURL = `https://api.mapbox.com/directions/v5/mapbox/driving/${this.startCoords[0]},${this.startCoords[1]};${this.endCoords[0]},${this.endCoords[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+
+      fetch(routeURL)
         .then(response => response.json())
         .then(data => {
-          const route = data.routes[0].geometry;
+          const path = data.routes[0].geometry;
 
-          // Remove previous directions layer if it exists
-          if (this.directionsLayer) {
-            this.map.removeLayer('route');
-            this.map.removeSource('route');
-          }
-
-          // Add new source for route
-          this.map.addSource('route', {
+          this.map.addSource('routePath', {
             type: 'geojson',
             data: {
               type: 'Feature',
               properties: {},
-              geometry: route,
+              geometry: path,
             },
           });
 
-          // Add new layer for route
           this.map.addLayer({
-            id: 'route',
+            id: 'routePath',
             type: 'line',
-            source: 'route',
+            source: 'routePath',
             layout: {
               'line-join': 'round',
               'line-cap': 'round',
@@ -219,33 +224,29 @@ export default {
             },
           });
 
-          // Fit map to the route
-          const bounds = new mapboxgl.LngLatBounds();
-          route.coordinates.forEach(coord => bounds.extend(coord));
-          this.map.fitBounds(bounds, { padding: 50 });
+          const routeBounds = new mapboxgl.LngLatBounds();
+          path.coordinates.forEach(coord => routeBounds.extend(coord));
+          this.map.fitBounds(routeBounds, { padding: 50 });
         })
         .catch(err => {
           console.error('Error fetching directions:', err);
         });
     },
-    // Clear the route, markers, and reset inputs
-    clearRoute() {
-      // Remove markers if they exist
-      if (this.originMarker) this.originMarker.remove();
-      if (this.destinationMarker) this.destinationMarker.remove();
+    // Clear everything and reset
+    resetMap() {
+      if (this.startPin) this.startPin.remove();
+      if (this.endPin) this.endPin.remove();
 
-      // Remove directions layer if it exists
-      if (this.map.getSource('route')) {
-        this.map.removeLayer('route');
-        this.map.removeSource('route');
+      if (this.map.getSource('routePath')) {
+        this.map.removeLayer('routePath');
+        this.map.removeSource('routePath');
       }
 
-      // Reset input fields and state
-      this.origin = '';
-      this.destination = '';
-      this.originCoords = null;
-      this.destinationCoords = null;
-      this.showDestination = false;
+      this.startPoint = '';
+      this.endPoint = '';
+      this.startCoords = null;
+      this.endCoords = null;
+      this.showEndSearch = false;
     },
   },
 };
@@ -263,25 +264,18 @@ export default {
   font-size: 16px;
   border-radius: 4px;
   border: 1px solid #ccc;
-  width: calc(100% - 80px); /* Adjust to allow the button to fit */
+  width: 100%;
   margin-bottom: 4px;
 }
 
-.search-input-container {
+.search-bar {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  z-index: 2;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.action-button-clear {
-  padding: 10px 16px;
-  font-size: 16px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 10px;
+  flex-direction: column;
+  width: 400px;
 }
 
 .action-button {
@@ -292,8 +286,19 @@ export default {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  width: 100%; /* Ensure buttons take full width */
-  margin-bottom: 10px; /* Space between buttons */
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.action-button-clear {
+  padding: 10px 16px;
+  font-size: 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
 }
 
 .search-bar input {
