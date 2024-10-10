@@ -6,14 +6,15 @@ import AboutView from '../views/AboutView.vue';
 import NavBar from '../views/NavBar.vue';
 import LoginView from '../views/LoginView.vue';
 import RegisterView from '../views/RegisterView.vue';
-import AccessDeniedView from '../Views/AccessDeniedView.vue';
-import AdminLoginView from '../Views/AdminLoginView.vue';
-import AdminView from '../Views/AdminView.vue';
+import AccessDeniedView from '@/views/AccessDeniedView.vue';
+import AdminLoginView from '@/views/AdminLoginView.vue';
+import AdminView from '@/views/AdminView.vue';
 import RatingView from '../views/RatingView.vue';
 import FirebaseSigninView from '../views/FirebaseSigninView.vue';
 import FirebaseRegisterView from '../views/FirebaseRegisterView.vue';
-import LogoutView from '../Views/LogoutView.vue';
+import LogoutView from '@/views/LogoutView.vue';
 import db from '@/firebase/init';
+import GetSupportView from '@/views/GetSupportView.vue';
 
 const routes = [
   {
@@ -74,6 +75,11 @@ const routes = [
         path: '/logout',
         name: 'Logout',
         component: LogoutView
+      },
+      {
+        path: '/getsupport',
+        name: 'GetSupport',
+        component: GetSupportView
       },
     ],
   },

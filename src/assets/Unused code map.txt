@@ -1,0 +1,146 @@
+<template>
+  <div class="container mt-5">
+    <div class="text-center mb-4">
+      <h1>Get Support</h1>
+      <p class="lead">Find directions to the nearest support centers and resources to help you.</p>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-md-6 mx-auto">
+        <input
+          type="text"
+          v-model="searchQuery"
+          @input="searchLocation"
+          class="form-control"
+          placeholder="Search for a location..."
+        />
+      </div>
+    </div>
+
+    <div id="map" class="map-container"></div>
+  </div>
+</template>
+
+<script setup>
+import { onMounted, ref } from 'vue';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+// Set your MapBox API Key
+mapboxgl.accessToken = 'pk.eyJ1IjoieWxpdTAyOTMiLCJhIjoiY20yMzNydHJ1MDFxYzJqb2h1bnQ0a2czYiJ9.GD7GpyS0vfCnw3YF-c3stA';
+
+const searchQuery = ref('');
+let map, currentLocationMarker, destinationMarker, directionsControl;
+const currentLocation = ref([0, 0]); // To store current location coordinates
+
+// Initialize the map
+const initializeMap = () => {
+  map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: currentLocation.value, // Center on the user's current location initially
+    zoom: 12,
+  });
+
+  // Add markers for current location and destination
+  currentLocationMarker = new mapboxgl.Marker({ color: 'green' })
+    .setLngLat(currentLocation.value)
+    .addTo(map);
+
+  destinationMarker = new mapboxgl.Marker({ color: 'red' })
+    .addTo(map);
+
+  // Add navigation controls to the map (zoom in/out)
+  map.addControl(new mapboxgl.NavigationControl());
+};
+
+// Get user's current location using the Geolocation API
+const getCurrentLocation = () => {
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      currentLocation.value = [position.coords.longitude, position.coords.latitude];
+      if (map) {
+        map.flyTo({ center: currentLocation.value, zoom: 12 });
+        currentLocationMarker.setLngLat(currentLocation.value); // Update the marker with user's current location
+      }
+    },
+    error => {
+      console.error('Error getting current location:', error);
+    }
+  );
+};
+
+// Search for a location using MapBox Geocoding API
+const searchLocation = () => {
+  if (searchQuery.value) {
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${searchQuery.value}.json?access_token=${mapboxgl.accessToken}`;
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        if (data.features && data.features.length > 0) {
+          const destination = data.features[0].center; // Get the coordinates of the first result
+          if (destination && destination.length === 2) {
+            destinationMarker.setLngLat(destination); // Set the destination marker
+            getDirections(currentLocation.value, destination); // Get directions from current location to destination
+          } else {
+            console.error('Invalid destination coordinates');
+          }
+        } else {
+          console.error('No location found for the query.');
+        }
+      })
+      .catch(err => console.error('Error fetching location:', err));
+  }
+};
+
+// Get directions using MapBox Directions API
+const getDirections = (start, end) => {
+  const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${start[0]},${start[1]};${end[0]},${end[1]}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+  fetch(directionsUrl)
+    .then(response => response.json())
+    .then(data => {
+      const route = data.routes[0].geometry; // Get the route geometry
+      if (map.getSource('route')) {
+        map.removeLayer('route'); // Remove previous route layer if any
+        map.removeSource('route');
+      }
+      map.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: route,
+        },
+      });
+      map.addLayer({
+        id: 'route',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': '#ff7e5f',
+          'line-width': 4,
+        },
+      });
+    })
+    .catch(err => console.error('Error fetching directions:', err));
+};
+
+// Mount the map and get current location on page load
+onMounted(() => {
+  initializeMap();
+  getCurrentLocation();
+});
+</script>
+
+<style scoped>
+.map-container {
+  height: 500px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+</style>

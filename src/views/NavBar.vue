@@ -28,7 +28,7 @@
                 <router-link to="/About" class="nav-link">What We Do</router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/" class="nav-link">Get Support</router-link>
+                <router-link to="/getsupport" class="nav-link">Get Support</router-link>
               </li>
               <li class="nav-item">
                 <router-link to="/" class="nav-link">Stay Healthy</router-link>
