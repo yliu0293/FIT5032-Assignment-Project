@@ -15,6 +15,8 @@ import FirebaseRegisterView from '../views/FirebaseRegisterView.vue';
 import LogoutView from '@/views/LogoutView.vue';
 import db from '@/firebase/init';
 import GetSupportView from '@/views/GetSupportView.vue';
+import StayHealthyView from '@/views/StayHealthyView.vue';
+import EventView from '@/views/EventView.vue';
 
 const routes = [
   {
@@ -80,6 +82,16 @@ const routes = [
         path: '/getsupport',
         name: 'GetSupport',
         component: GetSupportView
+      },
+      {
+        path: '/stayhealthy',
+        name: 'StayHealthy',
+        component: StayHealthyView
+      },
+      {
+        path: '/event',
+        name: 'Event',
+        component: EventView
       },
     ],
   },

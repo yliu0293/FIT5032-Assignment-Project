@@ -125,3 +125,81 @@ exports.calculateAverageRatings = onRequest((req, res) => {
     }
   });
 });
+
+// Email Function Nodemailer
+const { getStorage } = require("firebase-admin/storage");
+const nodemailer = require("nodemailer");
+
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "leek19970509@gmail.com", // Your Gmail account
+    pass: "dmyesjqixskehics", // App password from Gmail
+  },
+});
+
+// Firebase function to handle email sending with PDF attachment
+exports.sendEmail = onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required." });
+    }
+
+    try {
+      // Get reference to the PDF in Firebase Storage
+      const bucket = getStorage().bucket();
+      const pdfPath = "Healthy-Living-for-Seniors-Booklet-Reduced-4.pdf";
+      const file = bucket.file(pdfPath);
+
+      // Generate a signed URL for the PDF (optional)
+      await file.getSignedUrl({
+        action: "read",
+        expires: "03-09-2491",
+      });
+
+      // Email message content (about 100 words)
+      const message = `
+        Dear Recipient,
+
+        Elder health is of utmost importance at SeniorCareDirect. 
+        We are here to provide the support and resources you need. 
+        We strive to ensure a fulfilling and healthy life for our senior community. 
+
+        Attached, you will find our "Stay Healthy" booklet. 
+        This guide is designed to offer useful advice on how to live a healthier lifestyle in your golden years. 
+        
+        We hope you find it helpful!
+
+        Stay well, 
+        The SeniorCareDirect Team
+      `;
+
+      const mailOptions = {
+        from: "\"SeniorCareDirect\" <info@SeniorCareDirect.com>", // Using double quotes inside the string
+        to: email,
+        subject: "Stay Healthy Guide for Elder Living",
+        text: message,
+        attachments: [
+          {
+            filename: "Healthy-Living-for-Seniors-Booklet.pdf",
+            path: "https://storage.googleapis.com/yugong-liu-assignment-project.appspot.com/Healthy-Living-for-Seniors-Booklet-Reduced-4.pdf",
+            contentType: "application/pdf",
+          },
+        ],
+      };
+
+      // Send email with PDF attachment
+      await transporter.sendMail(mailOptions);
+
+      // Respond with success message
+      res.status(200).json({ result: "Email sent successfully" });
+    } catch (error) {
+      console.error("Error sending email:", error);
+      res.status(500).json({ error: "Failed to send email." });
+    }
+  });
+});
+

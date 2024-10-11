@@ -31,10 +31,10 @@
                 <router-link to="/getsupport" class="nav-link">Get Support</router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/" class="nav-link">Stay Healthy</router-link>
+                <router-link to="/stayhealthy" class="nav-link">Stay Healthy</router-link>
               </li>
               <li class="nav-item">
-                <router-link to="/" class="nav-link">Join the Community</router-link>
+                <router-link to="/event" class="nav-link">Join the Community</router-link>
               </li>
               <li class="nav-item">
                 <router-link to="/rating" class="nav-link">Rating</router-link>
