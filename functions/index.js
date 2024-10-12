@@ -203,3 +203,42 @@ exports.sendEmail = onRequest(async (req, res) => {
   });
 });
 
+// Function to send bulk emails
+exports.sendBulkEmails = onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    const { emails } = req.body;
+
+    if (!emails || emails.length === 0) {
+      return res.status(400).json({ error: "At least one email is required." });
+    }
+
+    try {
+      const message = `
+        Dear Recipient,
+
+        Here's a test email sending from the admin page.
+      `;
+
+      // Loop through each email and send them an email
+      const emailPromises = emails.map((email) => {
+        const mailOptions = {
+          from: "\"SeniorCareDirect\" <info@SeniorCareDirect.com>",
+          to: email,
+          subject: "Admin Test Email",
+          text: message,
+        };
+
+        return transporter.sendMail(mailOptions);
+      });
+
+      // Wait for all emails to be sent
+      await Promise.all(emailPromises);
+
+      // Respond with success message
+      res.status(200).json({ result: `Bulk email sent to ${emails.length} users` });
+    } catch (error) {
+      console.error("Error sending bulk emails:", error);
+      res.status(500).json({ error: "Failed to send bulk emails." });
+    }
+  });
+});

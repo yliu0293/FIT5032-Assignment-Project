@@ -1,110 +1,104 @@
 <template>
-  <div class="container-fluid bg-light d-flex flex-column justify-content-center align-items-center" style="margin-top: 30px;">
-    <div class="RatingView">
-      <h1>Please tell us about your experience!</h1>
-
-      <!-- Rating Cards -->
-      <div class="card border-light mb-3" v-for="(label, idx) in ratingCategories" :key="idx" style="margin-top: 30px;">
-        <div class="StarRating">
-          <h4>{{ label }}</h4>
-          <div>
+  <div class="container bg-lightblue d-flex flex-column align-items-center py-5">
+    <div class="rating-container shadow-sm p-4 mb-5 bg-white rounded w-100">
+      <h1 class="text-center mb-4">Your Feedback Matters!</h1>
+      <div v-for="(category, i) in categories" :key="i" class="rating-card mb-4">
+        <div class="card p-3 shadow-sm">
+          <h4>{{ category }}</h4>
+          <div class="stars d-flex justify-content-center mb-2">
             <svg 
-              v-for="starNum in 5"
-              :key="starNum"
+              v-for="star in 5"
+              :key="star"
               xmlns="http://www.w3.org/2000/svg" 
-              width="50" height="50" fill="currentColor" 
-              class="bi bi-star-fill" 
-              :class="{ 
-                'text-warning': starNum <= starHover[idx] || starNum <= rateChoices[idx], 
-                'text-secondary': starNum > starHover[idx] && starNum > rateChoices[idx] 
-              }"
+              width="40" height="40" fill="currentColor" 
+              class="bi bi-star-fill mx-1"
+              :class="{ 'active': star <= hoverStarsStatuses[i] || star <= ratings[i] }"
               viewBox="0 0 16 16"
-              @mouseover="hoverStars(starNum, idx)"
-              @mouseleave="hoverStars(0, idx)"
-              @click="setRate(starNum, idx)"
-              style="cursor: pointer;">
+              @mouseover="hoverStars(star, i)"
+              @mouseleave="hoverStars(0, i)"
+              @click="setRating(star, i)"
+              style="cursor: pointer; transition: fill 0.2s ease;"
+            >
               <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
             </svg>
           </div>
-          <p class="mt-2">
-            Your rating: {{ rateChoices[idx] }} |
-            Avg rating: {{ typeof ratingAverages[categoryKeyMap[label]] === 'number' ? ratingAverages[categoryKeyMap[label]].toFixed(2) : 'N/A' }}
-          </p>
+          <p class="text-center">Your Rating: {{ ratings[i] }} | Avg: {{ avgRatings[ratingMapping[category]]?.toFixed(2) || 'N/A' }}</p>
         </div>
       </div>
 
-      <!-- Comment Box -->
-      <div class="form-group mt-3">
+      <div class="form-group mt-3 w-75 mx-auto">
         <textarea 
-          v-model="userComment"
-          class="form-control" 
-          placeholder="Say something about your experience (required)" 
+          v-model="comment"
+          class="form-control shadow-sm" 
+          placeholder="Let us know what you think..." 
           rows="3"
           required>
         </textarea>
       </div>
 
-      <!-- Submit Button -->
-      <button @click="submitEverything" class="btn btn-outline-primary mt-3">Submit All</button>
+      <button @click="submitForm" class="btn btn-primary btn-lg mt-3 w-50 mx-auto shadow-sm">Submit Feedback</button>
 
-      <!-- Filters and Results Section -->
-      <div class="mt-5">
-        <h1 class="mb-4">Check out All Ratings</h1>
+      <div class="mt-5 w-100">
+        <h2 class="mb-4 text-center">All Feedback</h2>
 
-        <!-- Email Filter -->
         <input
-          v-model="emailSearch"
-          @input="searchByEmail"
-          class="form-control mb-3"
-          placeholder="Search by User Email"
+          v-model="selectedEmails"
+          @input="searchEmail"
+          class="form-control mb-3 w-50 mx-auto shadow-sm"
+          placeholder="Filter by email"
         />
 
-        <!-- Dropdown Filters -->
-        <div class="d-flex justify-content-around">
-          <div>
+        <div class="d-flex justify-content-around w-100 mb-4">
+          <div class="w-25">
             <label for="website-filter">Website</label>
-            <select v-model="selectedFilters.website" id="website-filter" @change="filterRatings" class="form-select">
+            <select v-model="selectedFilters.website" id="website-filter" @change="filterRatings" class="form-select shadow-sm">
               <option value="">Any</option>
               <option v-for="num in 5" :key="num" :value="num">{{ num }}</option>
             </select>
           </div>
 
-          <div>
+          <div class="w-25">
             <label for="navigation-filter">Navigation</label>
-            <select v-model="selectedFilters.navigation" id="navigation-filter" @change="filterRatings" class="form-select">
+            <select v-model="selectedFilters.navigation" id="navigation-filter" @change="filterRatings" class="form-select shadow-sm">
               <option value="">Any</option>
               <option v-for="num in 5" :key="num" :value="num">{{ num }}</option>
             </select>
           </div>
 
-          <div>
+          <div class="w-25">
             <label for="event-filter">Event Finder</label>
-            <select v-model="selectedFilters.eventFinder" id="event-filter" @change="filterRatings" class="form-select">
+            <select v-model="selectedFilters.eventFinder" id="event-filter" @change="filterRatings" class="form-select shadow-sm">
               <option value="">Any</option>
               <option v-for="num in 5" :key="num" :value="num">{{ num }}</option>
             </select>
           </div>
 
-          <div>
+          <div class="w-25">
             <label for="map-filter">Map</label>
-            <select v-model="selectedFilters.map" id="map-filter" @change="filterRatings" class="form-select">
+            <select v-model="selectedFilters.map" id="map-filter" @change="filterRatings" class="form-select shadow-sm">
               <option value="">Any</option>
               <option v-for="num in 5" :key="num" :value="num">{{ num }}</option>
             </select>
           </div>
         </div>
 
-        <!-- Data Table -->
-        <DataTable :value="visibleRatings" paginator :rows="10" class="mt-4">
-          <Column field="userEmail" header="User" sortable filter filterPlaceholder="Search by User"></Column>
-          <Column field="averageRating" header="Avg Rating" sortable></Column>
-          <Column field="overall" header="Website" sortable></Column>
-          <Column field="navigation" header="Navigation" sortable></Column>
-          <Column field="eventFinder" header="Event Finder" sortable></Column>
-          <Column field="map" header="Map" sortable></Column>
-          <Column field="comment" header="Comment" sortable></Column>
-          <Column field="timestamp" header="Submitted At" sortable :formatter="formatDate"></Column>
-        </DataTable>
+        <div class="table-responsive-md table-bordered shadow-sm">
+          <DataTable :value="filteredRatings" paginator :rows="10" striped-rows class="custom-datatable">
+            <Column field="userEmail" header="User" sortable header-style="background-color: #e0f7fa;"></Column>
+            <Column field="averageRating" header="Avg Rating" sortable header-style="background-color: #e0f7fa;"></Column>
+            <Column field="overall" header="Website" sortable header-style="background-color: #e0f7fa;"></Column>
+            <Column field="navigation" header="Navigation" sortable header-style="background-color: #e0f7fa;"></Column>
+            <Column field="eventFinder" header="Event Finder" sortable header-style="background-color: #e0f7fa;"></Column>
+            <Column field="map" header="Map" sortable header-style="background-color: #e0f7fa;"></Column>
+            <Column field="comment" header="Comment" header-style="background-color: #e0f7fa;"></Column>
+            <Column field="timestamp" header="Date" sortable :formatter="timestampDisplay" header-style="background-color: #e0f7fa;"></Column>
+          </DataTable>
+        </div>
+
+        <div class="chart-container mt-5 w-100 bg-white shadow p-4 rounded">
+          <h2 class="mb-4 text-center">Average Ratings Graph</h2>
+          <canvas id="feedbackChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
@@ -117,18 +111,36 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import {
+  Chart,
+  BarController, 
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 
-// Firestore & Auth Setup
+Chart.register(
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend
+);
+
 const db = getFirestore();
 const auth = getAuth();
 
-// Rating state
-const ratingCategories = ['Please rate your experience with our website', 'Please Rate the website navigation experience', 'Rate your experience using the event finder', 'Rate the map feature'];
-const rateChoices = ref([0, 0, 0, 0]);
-const starHover = ref([0, 0, 0, 0]);
-const userComment = ref('');
-const emailSearch = ref('');
-const visibleRatings = ref([]);
+const categories = ['Website Experience', 'Navigation', 'Event Finder', 'Map Features'];
+const ratings = ref([0, 0, 0, 0]);
+const hoverStarsStatuses = ref([0, 0, 0, 0]);
+const comment = ref('');
+const selectedEmails = ref('');
+const filteredRatings = ref([]);
 const selectedFilters = ref({
   website: '',
   navigation: '',
@@ -136,86 +148,76 @@ const selectedFilters = ref({
   map: ''
 });
 
-// Mapping category labels to Firestore keys
-const categoryKeyMap = {
-  'Please rate your experience with our website': 'overall',
-  'Please Rate the website navigation experience': 'navigation',
-  'Rate your experience using the event finder': 'eventFinder',
-  'Rate the map feature': 'map'
+const ratingMapping = {
+  'Website Experience': 'overall',
+  'Navigation': 'navigation',
+  'Event Finder': 'eventFinder',
+  'Map Features': 'map',
 };
 
-// Rating data for averages
 const allRatings = ref([]);
-const ratingAverages = ref({
+
+const avgRatings = ref({
   overall: 0,
   navigation: 0,
   eventFinder: 0,
   map: 0,
 });
 
-// Current user email
-let currentUserEmail = ref(null);
+let currentEmail = ref(null);
 
-// Handle star hover effect
 const hoverStars = (num, idx) => {
-  starHover.value[idx] = num;
+  hoverStarsStatuses.value[idx] = num;
 };
 
-// Set rating for each category
-const setRate = (num, idx) => {
-  rateChoices.value[idx] = num;
+const setRating = (num, idx) => {
+  ratings.value[idx] = num;
 };
 
-// Handle submission of ratings
-const submitEverything = async () => {
-  if (rateChoices.value.includes(0) || !userComment.value) {
-    alert('Fill out all ratings and the comment.');
+const submitForm = async () => {
+  if (ratings.value.includes(0) || !comment.value) {
+    alert('Please rate all categories and leave a comment.');
     return;
   }
 
-  const avgRating = rateChoices.value.reduce((sum, num) => sum + num, 0) / rateChoices.value.length;
+  const avgRating = ratings.value.reduce((sum, rating) => sum + rating, 0) / ratings.value.length;
 
   try {
     await addDoc(collection(db, 'ratings'), {
-      userEmail: currentUserEmail.value,
-      overall: rateChoices.value[0],
-      navigation: rateChoices.value[1],
-      eventFinder: rateChoices.value[2],
-      map: rateChoices.value[3],
+      userEmail: currentEmail.value,
+      overall: ratings.value[0],
+      navigation: ratings.value[1],
+      eventFinder: ratings.value[2],
+      map: ratings.value[3],
       averageRating: avgRating.toFixed(2),
-      comment: userComment.value,
+      comment: comment.value,
       timestamp: new Date(),
     });
-    alert('Ratings submitted!');
-    userComment.value = '';
-    rateChoices.value = [0, 0, 0, 0];
-    getAllRatings();
+    alert('Thanks for your feedback!');
+    comment.value = '';
+    ratings.value = [0, 0, 0, 0];
+    fetchRatings();
   } catch (error) {
-    console.error("Error submitting:", error);
+    console.error("Submission failed:", error);
   }
 };
 
-// Fetch average ratings via Cloud Function
-const getAverageRatings = async () => {
+const fetchAvgRatings = async () => {
   try {
-    const response = await axios.get('https://calculateaverageratings-bqwwbbooaq-uc.a.run.app');
-    console.log('Average Ratings:', response.data);
-
-    const averages = {
-      overall: parseFloat(response.data.overall),
-      navigation: parseFloat(response.data.navigation),
-      eventFinder: parseFloat(response.data.eventFinder),
-      map: parseFloat(response.data.map)
+    const res = await axios.get('https://calculateaverageratings-bqwwbbooaq-uc.a.run.app');
+    avgRatings.value = {
+      overall: parseFloat(res.data.overall),
+      navigation: parseFloat(res.data.navigation),
+      eventFinder: parseFloat(res.data.eventFinder),
+      map: parseFloat(res.data.map),
     };
-
-    ratingAverages.value = averages;
-  } catch (error) {
-    console.error("Error getting averages:", error.message);
+    updateAVGChart(avgRatings.value);
+  } catch (err) {
+    console.error("Failed to fetch averages:", err.message);
   }
 };
 
-// Get all ratings from Firestore
-const getAllRatings = async () => {
+const fetchRatings = async () => {
   const snapshot = await getDocs(collection(db, 'ratings'));
   allRatings.value = [];
 
@@ -225,57 +227,225 @@ const getAllRatings = async () => {
     allRatings.value.push(data);
   });
 
-  visibleRatings.value = allRatings.value;
-  getAverageRatings();
+  filteredRatings.value = allRatings.value;
+  fetchAvgRatings();
 };
 
-// Format timestamp
-const formatDate = (val) => {
-  if (val instanceof Date) {
-    return val.toLocaleString('en-US', { timeZoneName: 'short' });
+const timestampDisplay = (value) => {
+  if (value instanceof Date) {
+    return value.toLocaleString();
   }
-  return val;
-};
-
-// Filter by email and ratings
-const searchByEmail = () => {
-  filterRatings();
+  return value;
 };
 
 const filterRatings = () => {
-  visibleRatings.value = allRatings.value.filter((rating) => {
-    return (
-      (selectedFilters.value.website === '' || rating.overall === parseInt(selectedFilters.value.website)) &&
-      (selectedFilters.value.navigation === '' || rating.navigation === parseInt(selectedFilters.value.navigation)) &&
-      (selectedFilters.value.eventFinder === '' || rating.eventFinder === parseInt(selectedFilters.value.eventFinder)) &&
-      (selectedFilters.value.map === '' || rating.map === parseInt(selectedFilters.value.map)) &&
-      rating.userEmail.toLowerCase().includes(emailSearch.value.toLowerCase())
-    );
+  filteredRatings.value = allRatings.value.filter((rating) => {
+    const matchEmail = selectedEmails.value
+      ? rating.userEmail.toLowerCase().includes(selectedEmails.value.toLowerCase())
+      : true;
+    const matchWebsite = selectedFilters.value.website
+      ? rating.overall === parseInt(selectedFilters.value.website)
+      : true;
+    const matchNavigation = selectedFilters.value.navigation
+      ? rating.navigation === parseInt(selectedFilters.value.navigation)
+      : true;
+    const matchEventFinder = selectedFilters.value.eventFinder
+      ? rating.eventFinder === parseInt(selectedFilters.value.eventFinder)
+      : true;
+    const matchMap = selectedFilters.value.map
+      ? rating.map === parseInt(selectedFilters.value.map)
+      : true;
+
+    return matchEmail && matchWebsite && matchNavigation && matchEventFinder && matchMap;
   });
 };
 
-// Get logged-in user's email
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    currentUserEmail.value = user.email;
-  }
-});
+const searchEmail = () => {
+  filterRatings();
+};
 
-onMounted(getAllRatings);
+
+let avgRatingChart = null;
+
+const updateAVGChart = (averages) => {
+  const ctx = document.getElementById('feedbackChart').getContext('2d');
+  
+  if (avgRatingChart) {
+    avgRatingChart.destroy();
+  }
+
+  avgRatingChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Website', 'Navigation', 'Event Finder', 'Map'],
+      datasets: [{
+        label: 'Average Ratings',
+        data: [averages.overall, averages.navigation, averages.eventFinder, averages.map],
+        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50'],
+        borderColor: '#fff',
+        borderWidth: 2,
+        barThickness: 50,
+        borderRadius: 8, 
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        title: {
+          display: true,
+          text: 'Average Ratings for Site Features',
+          font: {
+            size: 18,
+            weight: 'bold',
+          },
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          titleColor: '#fff',
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false,
+          },
+          ticks: {
+            font: {
+              size: 14,
+              weight: 'bold',
+            },
+          },
+        },
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.1)',
+          },
+          ticks: {
+            stepSize: 1,
+            font: {
+              size: 12,
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+onMounted(() => {
+  fetchRatings();
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentEmail.value = user.email;
+    }
+  });
+});
 </script>
 
 <style scoped>
-.RatingView {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.bg-lightblue {
+  background-color: #e0f7fa;
+}
+
+.rating-container {
   max-width: 80vw;
-  margin: 0 auto;
   text-align: center;
   padding: 20px;
 }
 
-.container-fluid {
-  max-width: 80vw;
-  margin: 0 auto;
+.custom-datatable .p-datatable-thead > tr > th {
+  background-color: #e0f7fa;
+  color: #333;
+  text-align: center;
+  font-weight: bold;
+}
+
+.custom-datatable .p-datatable-tbody > tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.custom-datatable .p-datatable-tbody > tr:hover {
+  background-color: #e0f7fa;
+  transition: background-color 0.3s ease;
+}
+
+.table-responsive-md {
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+.form-control, .form-select {
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.shadow-sm {
+  box-shadow: 0 50px 50px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  width: 100%;
+  height: 400px;
   margin-top: 50px;
+  margin-bottom: 50px;
+}
+
+.container-fluid {
+  max-width: 100vw;
+  margin: 50px;
+}
+
+.custom-datatable {
+  width: 100%;
+}
+
+.custom-datatable .p-datatable-thead > tr > th {
+  background-color: #e0f7fa;
+  color: #333;
+  text-align: center;
+  font-weight: bold;
+}
+
+.custom-datatable .p-datatable-tbody > tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.custom-datatable .p-datatable-tbody > tr:hover {
+  background-color: #f1f1f1;
+  transition: background-color 0.3s ease;
+}
+
+.custom-datatable .p-paginator {
+  margin-top: 20px;
+}
+
+.custom-datatable .p-paginator .paginator-template {
+  font-size: 1rem;
+}
+
+.custom-datatable .p-datatable-header {
+  background-color: #e0f7fa;
+}
+
+.stars svg {
+  fill: #ccc;
+}
+
+.stars svg.active {
+  fill: #FFD700;
+}
+
+.stars svg:hover {
+  fill: #FFD700;
+}
+
+.stars {
+  display: flex;
+  justify-content: center;
 }
 </style>

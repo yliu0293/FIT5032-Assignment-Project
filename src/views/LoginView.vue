@@ -55,7 +55,7 @@
       };
     },
     methods: {
-      ...mapActions(['loginUser']), // Ensure 'loginUser' action exists in the store
+      ...mapActions(['loginUser']),
       handleUserLogin() {
         const user = { username: this.username, password: this.password };
 

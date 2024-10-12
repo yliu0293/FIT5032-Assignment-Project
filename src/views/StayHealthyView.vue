@@ -1,27 +1,38 @@
 <template>
-  <div class="container mt-5">
-    <div class="text-center">
-      <h1 class="mb-4">Receive our Stay Healthy Booklet Today!</h1>
-      <p class="lead">At SeniorCareDirect, we empower seniors to stay healthy. Enter your email below to receive our "Stay Healthy" booklet with useful tips for elder living.</p>
-    </div>
-    <form @submit.prevent="sendBooklet">
-      <div class="mb-3">
-        <label for="email" class="form-label">Recipient Email</label>
-        <input type="email" class="form-control" id="email" v-model="recipientEmail" required />
+  <div class="container-fluid bg-lightblue py-5">
+    <div class="container mt-5">
+      <div class="text-center">
+        <h1 class="mb-4">Receive our Stay Healthy Booklet Today!</h1>
+        <p class="lead">At SeniorCareDirect, we empower seniors to stay healthy. Enter your email below to receive our "Stay Healthy" booklet with useful tips for elder living.</p>
+        <img src="@/assets/stayhealthy.jpg" alt="Stay Healthy Image" class="img-fluid rounded mb-4">
       </div>
-      <button type="submit" class="btn btn-primary">Send Booklet</button>
-    </form>
 
-    <!-- Modal Popup -->
-    <div v-if="isSendingEmail" class="modal">
-      <div class="modal-content">
-        <p>Sending your email...</p>
+      <form @submit.prevent="sendBooklet" class="mx-auto w-75">
+        <div class="mb-3">
+          <label for="email" class="form-label">Input your email to explore your Golden Age to the full potential</label>
+          <input type="email" class="form-control form-control-lg" id="email" v-model="recipientEmail" placeholder="Enter your email here" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg w-100">Send Booklet</button>
+      </form>
+
+      <!-- Sending popup -->
+      <div v-if="isSendingEmail" class="modal fade show d-block">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-body text-center">
+              <p class="mb-0">Sending your email...</p>
+              <div class="spinner-border text-primary mt-3" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Success or Failure Message -->
-    <div v-if="notificationMessage" class="alert" :class="notificationType">
-      {{ notificationMessage }}
+      <!-- Success or Failure Message -->
+      <div v-if="notificationMessage" class="alert mt-4" :class="notificationType">
+        {{ notificationMessage }}
+      </div>
     </div>
   </div>
 </template>
@@ -32,34 +43,31 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      recipientEmail: '',  // The email entered by the user
-      isSendingEmail: false,  // Tracks if the email is currently being sent
-      notificationMessage: '',     // Message to display after email is sent
-      notificationType: '', // Class to apply based on success or failure
+      recipientEmail: '',
+      isSendingEmail: false,
+      notificationMessage: '',
+      notificationType: '',
     };
   },
   methods: {
     async sendBooklet() {
-      this.isSendingEmail = true; // Show "Sending email" modal
-      this.notificationMessage = '';   // Clear previous notifications
+      this.isSendingEmail = true;
+      this.notificationMessage = '';
       this.notificationType = '';
 
       try {
-        // Send POST request to the Firebase function
         const response = await axios.post('https://sendemail-bqwwbbooaq-uc.a.run.app', {
           email: this.recipientEmail,
         });
 
-        // Show success message
         this.notificationMessage = response.data.result;
-        this.notificationType = 'alert-success'; // Bootstrap success class
+        this.notificationType = 'alert alert-success';
       } catch (error) {
-        // Show failure message
         this.notificationMessage = 'Failed to send email';
-        this.notificationType = 'alert-danger'; // Bootstrap danger class
+        this.notificationType = 'alert alert-danger';
         console.error(error);
       } finally {
-        this.isSendingEmail = false; // Hide "Sending email" modal
+        this.isSendingEmail = false;
       }
     },
   },
@@ -67,37 +75,63 @@ export default {
 </script>
 
 <style scoped>
-/* Modal style */
+.bg-lightblue {
+  background-color: #e0f7fa;
+}
+
 .modal {
-  display: block; 
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%; 
-  height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
+  border-radius: 10px;
   padding: 20px;
-  border-radius: 8px;
-  text-align: center;
+  background-color: white;
 }
 
-/* Alert styles */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
 .alert-success {
-  color: green;
-  margin-top: 20px;
+  color: #28a745;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
 }
 
 .alert-danger {
-  color: red;
-  margin-top: 20px;
+  color: #dc3545;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+
+form {
+  margin-top: 40px;
+}
+
+.form-control {
+  font-size: 1.2rem;
+}
+
+.form-label {
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
 }
 </style>

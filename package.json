@@ -13,21 +13,25 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@primevue/themes": "^4.0.5",
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "chart.js": "^4.4.4",
     "cors": "^2.8.5",
     "crypto-js": "^4.2.0",
     "express": "^4.21.0",
     "firebase": "^10.13.2",
     "firebase-admin": "^12.5.0",
     "firebase-functions": "^6.0.1",
+    "fullcalendar": "^6.1.15",
     "install": "^0.13.0",
     "mapbox-gl": "^3.7.0",
     "nodemailer": "^6.9.15",
     "primevue": "^4.0.5",
     "vue": "^3.4.29",
+    "vue-chartjs": "^5.3.1",
     "vue-router": "^4.4.3",
     "vuex": "^4.0.2"
   },
@@ -41,5 +45,10 @@
     "prettier": "^3.2.5",
     "vite": "^5.3.1",
     "vite-plugin-vue-devtools": "^7.3.1"
-  }
+  },
+  "description": "This template should help get you started developing with Vue 3 in Vite.",
+  "main": "server.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

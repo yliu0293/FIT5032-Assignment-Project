@@ -48,28 +48,24 @@ import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopu
 import { useRouter } from 'vue-router';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 
-// Initialize references
 const email = ref("");
 const password = ref("");
 const router = useRouter();
 const auth = getAuth();
-const db = getFirestore(); // Initialize Firestore
+const db = getFirestore();
 
-// Email and Password Sign-In
 const signinWithEmail = () => {
   signInWithEmailAndPassword(auth, email.value, password.value)
     .then((userCredential) => {
       console.log("Firebase Email Login Successful!");
       const user = userCredential.user;
 
-      // Fetch user role from Firestore
       getDoc(doc(db, "users", user.uid))
         .then((docSnap) => {
           if (docSnap.exists()) {
             const role = docSnap.data().role;
             console.log("User role: ", role);
 
-            // Redirect based on role
             if (role === "admin") {
               router.push("/admin-view");
             } else {
@@ -88,7 +84,7 @@ const signinWithEmail = () => {
     });
 };
 
-// Google Sign-In
+// Google auth
 const signinWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider)
@@ -96,7 +92,6 @@ const signinWithGoogle = () => {
       console.log("Google Login Successful!");
       const user = result.user;
 
-      // Check if user exists in Firestore
       const userRef = doc(db, "users", user.uid);
       getDoc(userRef)
         .then((docSnap) => {
@@ -114,7 +109,6 @@ const signinWithGoogle = () => {
             console.log("User already exists in Firestore");
           }
 
-          // Fetch user role and redirect
           const role = docSnap.exists() ? docSnap.data().role : 'user';
           console.log("User role: ", role);
 

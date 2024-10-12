@@ -1,57 +1,59 @@
 <!-- https://docs.mapbox.com/help/tutorials/use-mapbox-gl-js-with-vue/ -->
 <template>
-  <div class="text-center mt-5">
-    <h1 class="mb-4">Find nearby support</h1>
-    <p class="lead">Search by location name and address.</p>
-    <p class="lead">Select a location first to get direction from another location of your choice.</p>
-  </div>
+  <div class="container-fluid bg-lightblue py-5">
+    <div class="text-center mt-5">
+      <h1 class="mb-4">Find nearby support</h1>
+      <p class="lead">Search by location name and address.</p>
+      <p class="lead">Select a location first to get direction from another location of your choice.</p>
+    </div>
 
-  <div id="layout">
-    <!-- Location 1 Search -->
-    <div class="search-bar">
-      <input
-        v-model="startPoint"
-        @input="searchStart"
-        type="text"
-        placeholder="Enter starting location..."
-        class="input-box"
-      />
-
-      <ul v-if="startOptions.length" class="search-results">
-        <li v-for="(place, idx) in startOptions" :key="idx" @click="pickStart(place)">
-          {{ place.place_name }}
-        </li>
-      </ul>
-
-      <!-- Button for Directions -->
-      <button v-if="startCoords && !showEndSearch" @click="toggleEndSearch" class="action-button">
-        Get Directions
-      </button>
-
-      <!-- Destination Input appears after clicking Get Directions -->
-      <div v-if="showEndSearch">
+    <div id="layout">
+      <!-- Location 1 Search -->
+      <div class="search-bar">
         <input
-          v-model="endPoint"
-          @input="searchEnd"
+          v-model="startPoint"
+          @input="searchStart"
           type="text"
-          placeholder="Enter destination location..."
+          placeholder="Enter starting location..."
           class="input-box"
         />
-        <ul v-if="endOptions.length" class="search-results">
-          <li v-for="(place, idx) in endOptions" @click="pickEnd(place)">
+
+        <ul v-if="startOptions.length" class="search-results">
+          <li v-for="(place, idx) in startOptions" :key="idx" @click="pickStart(place)">
             {{ place.place_name }}
           </li>
         </ul>
 
-        <!-- Show Route and Clear Buttons -->
-        <div>
-          <button @click="drawRoute" class="action-button">Show Route</button>
-          <button @click="resetMap" class="action-button-clear">Clear</button> 
+        <!-- Button for Directions -->
+        <button v-if="startCoords && !showEndSearch" @click="toggleEndSearch" class="action-button">
+          Get Directions
+        </button>
+
+        <!-- Destination Input appears after clicking Get Directions -->
+        <div v-if="showEndSearch">
+          <input
+            v-model="endPoint"
+            @input="searchEnd"
+            type="text"
+            placeholder="Enter destination location..."
+            class="input-box"
+          />
+          <ul v-if="endOptions.length" class="search-results">
+            <li v-for="(place, idx) in endOptions" @click="pickEnd(place)">
+              {{ place.place_name }}
+            </li>
+          </ul>
+
+          <!-- Show Route and Clear Buttons -->
+          <div>
+            <button @click="drawRoute" class="action-button">Show Route</button>
+            <button @click="resetMap" class="action-button-clear">Clear</button> 
+          </div>
         </div>
       </div>
-    </div>
 
-    <div ref="mapContainer" class="map-container"></div> <!-- Map goes here -->
+      <div ref="mapContainer" class="map-container"></div> <!-- Map goes here -->
+    </div>
   </div>
 </template>
 
@@ -232,7 +234,7 @@ export default {
           console.error('Error fetching directions:', err);
         });
     },
-    // Clear everything and reset
+    //reset
     resetMap() {
       if (this.startPin) this.startPin.remove();
       if (this.endPin) this.endPin.remove();
@@ -253,6 +255,10 @@ export default {
 </script>
 
 <style scoped>
+.bg-lightblue {
+  background-color: #e0f7fa;
+}
+
 #layout {
   display: flex;
   position: relative;
@@ -335,5 +341,7 @@ export default {
 
 .text-center {
   margin-top: 20px;
+  margin-bottom: 50px;
 }
+
 </style>

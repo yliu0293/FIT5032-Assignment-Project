@@ -13,10 +13,11 @@ import RatingView from '../views/RatingView.vue';
 import FirebaseSigninView from '../views/FirebaseSigninView.vue';
 import FirebaseRegisterView from '../views/FirebaseRegisterView.vue';
 import LogoutView from '@/views/LogoutView.vue';
-import db from '@/firebase/init';
 import GetSupportView from '@/views/GetSupportView.vue';
 import StayHealthyView from '@/views/StayHealthyView.vue';
 import EventView from '@/views/EventView.vue';
+import AIView from '@/views/AIView.vue';
+import db from '@/Firebase/init';
 
 const routes = [
   {
@@ -93,6 +94,11 @@ const routes = [
         name: 'Event',
         component: EventView
       },
+      {
+        path: '/ai',
+        name: 'AI',
+        component: AIView
+      },
     ],
   },
 ]
@@ -110,10 +116,13 @@ router.beforeEach((to, from, next) => {
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
       // User is not logged in
-      if (to.name !== 'Home' && to.name !== 'FireLogin' && to.name !== 'FireRegister' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied' && to.name !== 'Logout') {
+      if (to.name !== 'Home' && to.name !== 'FireLogin' && to.name !== 'FireRegister' && to.name !== 'AdminLogin' && to.name !== 'AccessDenied') {
         return next({ name: 'AccessDenied' });
       }
     } else {
+      if (to.name === 'FireLogin' || to.name === 'FireRegister') {
+        return next({ name: 'AccessDenied' });
+      }
       // User is authenticated, check for admin role if navigating to AdminView
       if (to.name === 'AdminView') {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
