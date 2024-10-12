@@ -35,6 +35,7 @@
         <Column field="city" header="City" filter header-style="background-color: #e0f7fa;"></Column>
         <Column field="phone" header="Phone" filter header-style="background-color: #e0f7fa;"></Column>
       </DataTable>
+      <button @click="exportAsCSV" class="btn btn-primary mt-3">Export filterd events as CSV</button>
     </div>
   </div>
 </template>
@@ -102,6 +103,37 @@ const formatDate = (date) => {
 onMounted(() => {
   fetchEvents();
 });
+
+//data export
+const exportAsCSV = () => {
+  const headers = ['Event Name', 'Event Date', 'Address', 'City', 'Phone'];
+  const csvRows = [];
+
+  csvRows.push(headers.join(','));
+
+  filteredEvents.value.forEach(event => {
+    const row = [
+      event.event_name,
+      formatDate(event.event_date),
+      event.address,
+      event.city,
+      event.phone,
+    ];
+    csvRows.push(row.join(','));
+  });
+
+  const csvString = csvRows.join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv' });
+
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'events.csv';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 </script>
 
 <style scoped>
