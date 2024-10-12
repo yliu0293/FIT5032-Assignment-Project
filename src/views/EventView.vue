@@ -44,6 +44,7 @@ import { ref, onMounted } from 'vue';
 import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import DOMPurify from 'dompurify';
 
 const db = getFirestore();
 
@@ -73,10 +74,15 @@ const fetchEvents = async () => {
   }
 };
 
+const sanitizeFilter = (filterValue) => {
+  return DOMPurify.sanitize(filterValue);
+};
+
 const filterTable = () => {
   filteredEvents.value = events.value.filter(event => {
     return Object.keys(filters.value).every((key) => {
-      return event[key].toString().toLowerCase().includes(filters.value[key].toLowerCase());
+      const sanitizedFilter = sanitizeFilter(filters.value[key]);
+      return event[key].toString().toLowerCase().includes(sanitizedFilter.toLowerCase());
     });
   });
 };

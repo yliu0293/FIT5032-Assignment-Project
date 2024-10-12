@@ -65,8 +65,8 @@ import { ref } from 'vue'
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth'
 import { useRouter } from 'vue-router'
 import { getFirestore, doc, setDoc } from 'firebase/firestore'
+import DOMPurify from 'dompurify'
 
-// Initialize references
 const formData = ref({
   email: '',
   password: '',
@@ -83,9 +83,10 @@ const auth = getAuth()
 const db = getFirestore()
 const router = useRouter()
 
-// Validation Methods
+// Validation
 const validateEmail = (blur) => {
-  const email = formData.value.email
+  const sanitizedEmail = DOMPurify.sanitize(formData.value.email)
+  const email = sanitizedEmail
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   
   if (!emailRegex.test(email)) {
@@ -96,7 +97,8 @@ const validateEmail = (blur) => {
 }
 
 const validatePassword = (blur) => {
-  const password = formData.value.password
+  const sanitizedPassword = DOMPurify.sanitize(formData.value.password)
+  const password = sanitizedPassword
   const minLength = 8
   const hasUppercase = /[A-Z]/.test(password)
   const hasNumber = /\d/.test(password)

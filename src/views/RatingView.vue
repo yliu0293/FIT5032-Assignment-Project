@@ -111,6 +111,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import axios from 'axios';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import DOMPurify from 'dompurify';
 import {
   Chart,
   BarController, 
@@ -183,6 +184,7 @@ const submitForm = async () => {
   const avgRating = ratings.value.reduce((sum, rating) => sum + rating, 0) / ratings.value.length;
 
   try {
+    const sanitizedComment = DOMPurify.sanitize(comment.value);
     await addDoc(collection(db, 'ratings'), {
       userEmail: currentEmail.value,
       overall: ratings.value[0],
@@ -190,7 +192,7 @@ const submitForm = async () => {
       eventFinder: ratings.value[2],
       map: ratings.value[3],
       averageRating: avgRating.toFixed(2),
-      comment: comment.value,
+      comment: sanitizedComment,
       timestamp: new Date(),
     });
     alert('Thanks for your feedback!');
@@ -240,8 +242,9 @@ const timestampDisplay = (value) => {
 
 const filterRatings = () => {
   filteredRatings.value = allRatings.value.filter((rating) => {
+    const sanitizedEmail = selectedEmails.value ? selectedEmails.value.toLowerCase() : '';
     const matchEmail = selectedEmails.value
-      ? rating.userEmail.toLowerCase().includes(selectedEmails.value.toLowerCase())
+      ? rating.userEmail.toLowerCase().includes(sanitizedEmail)
       : true;
     const matchWebsite = selectedFilters.value.website
       ? rating.overall === parseInt(selectedFilters.value.website)

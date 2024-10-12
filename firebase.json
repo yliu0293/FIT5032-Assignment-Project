@@ -18,5 +18,16 @@
         "npm --prefix \"$RESOURCE_DIR\" run lint"
       ]
     }
-  ]
+  ],
+  
+  "hosting": {
+    "public": "dist"
+  },
+
+  "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
 }

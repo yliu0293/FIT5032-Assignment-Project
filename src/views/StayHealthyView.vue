@@ -39,6 +39,7 @@
 
 <script>
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 export default {
   data() {
@@ -56,8 +57,9 @@ export default {
       this.notificationType = '';
 
       try {
+        const sanitizedEmail = DOMPurify.sanitize(this.recipientEmail);
         const response = await axios.post('https://sendemail-bqwwbbooaq-uc.a.run.app', {
-          email: this.recipientEmail,
+          email: sanitizedEmail,
         });
 
         this.notificationMessage = response.data.result;
