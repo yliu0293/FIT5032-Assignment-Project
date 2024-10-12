@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, onBeforeMount } from 'vue';
+import { ref, onMounted, onUnmounted, watch, onBeforeMount, onBeforeUnmount } from 'vue';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'vue-router';
@@ -95,11 +95,13 @@ watch(onLine, (newStatus) => {
 });
 
 onMounted(() => {
+  // Listen for online/offline status change events
   window.addEventListener('online', updateOnlineStatus);
   window.addEventListener('offline', updateOnlineStatus);
 });
 
-onBeforeMount(() => {
+onBeforeUnmount(() => {
+  // Remove event listeners to avoid memory leaks
   window.removeEventListener('online', updateOnlineStatus);
   window.removeEventListener('offline', updateOnlineStatus);
 });
