@@ -11,19 +11,7 @@
       <div v-else class="text-muted">
         <p>No user is currently logged in.</p>
       </div>
-
-      <div v-if="onLine" class="alert alert-success">
-        You are currently online.
-      </div>
-
-      <div v-else class="alert alert-danger">
-        You are currently offline.
-      </div>
-
-      <div v-if="showBackOnline" class="alert alert-info">
-        You are back online!
-      </div>
-
+      
       <button @click="logout" class="btn btn-outline-danger btn-lg mt-3">
         Logout
       </button>
