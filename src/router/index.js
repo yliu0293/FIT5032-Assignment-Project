@@ -4,8 +4,6 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import HomeView from '../views/HomeView.vue';
 import AboutView from '../views/AboutView.vue';
 import NavBar from '../views/NavBar.vue';
-import LoginView from '../views/LoginView.vue';
-import RegisterView from '../views/RegisterView.vue';
 import AccessDeniedView from '@/views/AccessDeniedView.vue';
 import AdminLoginView from '@/views/AdminLoginView.vue';
 import AdminView from '@/views/AdminView.vue';
@@ -32,16 +30,6 @@ const routes = [
         path: 'about',
         name: 'About',
         component: AboutView,
-      },
-      {
-        path: 'login',
-        name: 'Login',
-        component: LoginView,
-      },
-      {
-        path: 'register',
-        name: 'Register',
-        component: RegisterView,
       },
       {
         path: '/access-denied',
