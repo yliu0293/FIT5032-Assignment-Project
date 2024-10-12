@@ -16,7 +16,6 @@ import LogoutView from '@/views/LogoutView.vue';
 import GetSupportView from '@/views/GetSupportView.vue';
 import StayHealthyView from '@/views/StayHealthyView.vue';
 import EventView from '@/views/EventView.vue';
-import AIView from '@/views/AIView.vue';
 import db from '@/Firebase/init';
 
 const routes = [
@@ -93,11 +92,6 @@ const routes = [
         path: '/event',
         name: 'Event',
         component: EventView
-      },
-      {
-        path: '/ai',
-        name: 'AI',
-        component: AIView
       },
     ],
   },

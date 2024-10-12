@@ -39,9 +39,6 @@
               <li class="nav-item">
                 <router-link to="/rating" class="nav-link">Rating</router-link>
               </li>
-              <li class="nav-item">
-                <router-link to="/ai" class="nav-link">Chat with AI</router-link>
-              </li>
               <!-- diplay admin page navigation when admin logged in -->
               <li class="nav-item" v-if="userRole === 'admin'">
                 <router-link to="/admin-view" class="nav-link">Admin View</router-link>
