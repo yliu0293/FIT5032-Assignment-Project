@@ -26,7 +26,7 @@
         showGridlines
       >
         <Column field="event_name" header="Event Name" filter header-style="background-color: #e0f7fa;"></Column>
-        <Column header="Event Date" sortable header-style="background-color: #e0f7fa;">
+        <Column field="event_date" header="Event Date" sortable header-style="background-color: #e0f7fa;">
           <template #body="slotProps">
             {{ slotProps.data.event_date ? formatDate(slotProps.data.event_date) : 'Invalid Date' }}
           </template>
@@ -41,12 +41,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import DOMPurify from 'dompurify';
-
-const db = getFirestore();
 
 const events = ref([]);
 const filteredEvents = ref([]);
@@ -62,15 +59,22 @@ const filterFields = ['event_name', 'event_date', 'address', 'city', 'phone'];
 
 const fetchEvents = async () => {
   try {
-    const snapshot = await getDocs(collection(db, 'events'));
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      data.event_date = new Date(data.event_date);
-      events.value.push(data);
-    });
-    filteredEvents.value = events.value;
+    const response = await fetch('https://us-central1-yugong-liu-assignment-project.cloudfunctions.net/getEvents');
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch events');
+    }
+
+    const data = await response.json();
+    const eventsData = data.events.map(event => ({
+      ...event,
+      event_date: new Date(event.event_date),
+    }));
+
+    events.value = eventsData;
+    filteredEvents.value = eventsData;
   } catch (error) {
-    console.error('Error fetching events:', error);
+    console.error('Error fetching events:', error.message);
   }
 };
 
@@ -92,7 +96,7 @@ const formatDate = (date) => {
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
-  return `${month}/${day}/${year}`;
+  return `${day}/${month}/${year}`;
 };
 
 onMounted(() => {

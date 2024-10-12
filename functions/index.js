@@ -26,6 +26,8 @@ const cors = require("cors")({ origin: true }); // Import and configure CORS
 
 initializeApp();
 const db = getFirestore();
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
 
 exports.submitRating = onRequest((req, res) => {
   // Use CORS to handle preflight requests
@@ -149,18 +151,15 @@ exports.sendEmail = onRequest(async (req, res) => {
     }
 
     try {
-      // Get reference to the PDF in Firebase Storage
       const bucket = getStorage().bucket();
       const pdfPath = "Healthy-Living-for-Seniors-Booklet-Reduced-4.pdf";
       const file = bucket.file(pdfPath);
 
-      // Generate a signed URL for the PDF (optional)
       await file.getSignedUrl({
         action: "read",
         expires: "03-09-2491",
       });
 
-      // Email message content (about 100 words)
       const message = `
         Dear Recipient,
 
@@ -178,7 +177,7 @@ exports.sendEmail = onRequest(async (req, res) => {
       `;
 
       const mailOptions = {
-        from: "\"SeniorCareDirect\" <info@SeniorCareDirect.com>", // Using double quotes inside the string
+        from: "\"SeniorCareDirect\" <info@SeniorCareDirect.com>",
         to: email,
         subject: "Stay Healthy Guide for Elder Living",
         text: message,
@@ -194,7 +193,7 @@ exports.sendEmail = onRequest(async (req, res) => {
       // Send email with PDF attachment
       await transporter.sendMail(mailOptions);
 
-      // Respond with success message
+      // success or error message
       res.status(200).json({ result: "Email sent successfully" });
     } catch (error) {
       console.error("Error sending email:", error);
@@ -231,14 +230,53 @@ exports.sendBulkEmails = onRequest(async (req, res) => {
         return transporter.sendMail(mailOptions);
       });
 
-      // Wait for all emails to be sent
       await Promise.all(emailPromises);
 
-      // Respond with success message
+      // success or error message
       res.status(200).json({ result: `Bulk email sent to ${emails.length} users` });
     } catch (error) {
       console.error("Error sending bulk emails:", error);
       res.status(500).json({ error: "Failed to send bulk emails." });
+    }
+  });
+});
+
+// Function to get events
+exports.getEvents = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      const eventsCollection = admin.firestore().collection("events");
+      const snapshot = await eventsCollection.get();
+
+      const events = [];
+      snapshot.forEach((doc) => {
+        events.push({ id: doc.id, ...doc.data() });
+      });
+
+      res.status(200).send({ events });
+    } catch (error) {
+      console.error("Error fetching events:", error.message);
+      res.status(500).send("Error fetching events");
+    }
+  });
+});
+
+// Function to get ratings
+exports.getRatings = functions.https.onRequest((req, res) => {
+  cors(req, res, async () => {
+    try {
+      const ratingsCollection = admin.firestore().collection("ratings");
+      const snapshot = await ratingsCollection.get();
+
+      const ratings = [];
+      snapshot.forEach((doc) => {
+        ratings.push({ id: doc.id, ...doc.data() });
+      });
+
+      res.status(200).send({ ratings });
+    } catch (error) {
+      console.error("Error fetching ratings:", error.message);
+      res.status(500).send("Error fetching ratings");
     }
   });
 });

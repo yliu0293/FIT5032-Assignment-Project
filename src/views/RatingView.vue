@@ -136,7 +136,7 @@ Chart.register(
 const db = getFirestore();
 const auth = getAuth();
 
-const categories = ['Website Experience', 'Navigation', 'Event Finder', 'Map Features'];
+const categories = ['How was your experience using the Website?', 'How would you rate the navigation between the webpages?', 'How was your experience with the Event Finder?', 'How was your experience using the map?'];
 const ratings = ref([0, 0, 0, 0]);
 const hoverStarsStatuses = ref([0, 0, 0, 0]);
 const comment = ref('');
@@ -150,10 +150,10 @@ const selectedFilters = ref({
 });
 
 const ratingMapping = {
-  'Website Experience': 'overall',
-  'Navigation': 'navigation',
-  'Event Finder': 'eventFinder',
-  'Map Features': 'map',
+  'How was your experience using the Website?': 'overall',
+  'How would you rate the navigation between the webpages?': 'navigation',
+  'How was your experience with the Event Finder?': 'eventFinder',
+  'How was your experience using the map?': 'map',
 };
 
 const allRatings = ref([]);
@@ -220,24 +220,35 @@ const fetchAvgRatings = async () => {
 };
 
 const fetchRatings = async () => {
-  const snapshot = await getDocs(collection(db, 'ratings'));
-  allRatings.value = [];
-
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    data.timestamp = data.timestamp.toDate();
-    allRatings.value.push(data);
-  });
-
-  filteredRatings.value = allRatings.value;
-  fetchAvgRatings();
+  try {
+    const response = await axios.get('https://us-central1-yugong-liu-assignment-project.cloudfunctions.net/getRatings');
+    allRatings.value = response.data.ratings.map((rating) => {
+      if (rating.timestamp && rating.timestamp._seconds) {
+        // Convert Firestore timestamp to JavaScript Date
+        rating.timestamp = new Date(rating.timestamp._seconds * 1000);
+      }
+      return rating;
+    });
+    filteredRatings.value = allRatings.value;
+    fetchAvgRatings();
+  } catch (error) {
+    console.error("Error fetching ratings:", error);
+  }
 };
 
 const timestampDisplay = (value) => {
   if (value instanceof Date) {
-    return value.toLocaleString();
+    const day = String(value.getDate()).padStart(2, '0');
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const year = value.getFullYear();
+
+    const hours = String(value.getHours()).padStart(2, '0');
+    const minutes = String(value.getMinutes()).padStart(2, '0');
+    const seconds = String(value.getSeconds()).padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
   }
-  return value;
+  return 'Invalid Date';
 };
 
 const filterRatings = () => {
@@ -280,7 +291,7 @@ const updateAVGChart = (averages) => {
   avgRatingChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: ['Website', 'Navigation', 'Event Finder', 'Map'],
+      labels: ['Website Experience Rating', 'Navigation Rating', 'Event Finder Rating', 'Map Feature Rating'],
       datasets: [{
         label: 'Average Ratings',
         data: [averages.overall, averages.navigation, averages.eventFinder, averages.map],
